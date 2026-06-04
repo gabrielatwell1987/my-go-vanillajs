@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ReelingIt - Movies</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <meta name="theme-color" content="#56bce8" />
+    <link rel="manifest" href="app.webmanifest" />
+    <link rel="icon" href="/images/icon.png" type="image/png" />
+    <script src="/app.js" type="module" defer></script>
+    <base href="/" />
+  </head>
+
+  <body>
+    <header>
+      <h1>
+        <a href="/" class="navlink"
+          ><img src="/images/logo.png" height="35" alt="ReelingIt"
+        /></a>
+      </h1>
+      <nav>
+        <ul>
+          <li><a href="/" class="navlink">Movies</a></li>
+          <li><a href="/account/favorites" class="navlink">Favorites</a></li>
+          <li><a href="/account/watchlist" class="navlink">Watchlist</a></li>
+          <li><a href="/account/" class="navlink">My Account</a></li>
+        </ul>
+      </nav>
+      <div>
+        <form onsubmit="app.search(event)">
+          <input type="search" placeholder="Search movies" />
+        </form>
+      </div>
+    </header>
+
+    <main></main>
+
+    <footer>
+      <p>© ReelingIt - atwell.dev</p>
+    </footer>
+  </body>
+</html>
