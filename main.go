@@ -40,11 +40,17 @@ func main() {
 		log.Fatalf("Failed to initialize movie repository: %v", err)
 	}
 
+	accountRepo, err := data.NewAccountRepository(db, logInstance)
+	if err != nil {
+		log.Fatalf("Failed to initialize account repository: %v", err)
+	}
+
 	// serve static files
 	http.Handle("/", http.FileServer(http.Dir("public")))
 
 	// Initialize handlers
 	movieHandler := handlers.NewMovieHandler(movieRepo, logInstance)
+	accountHandler := handlers.NewAccountHandler(accountRepo, logInstance)
 	// authHandler := handlers.NewAuthHandler(userStorage, jwt, logInstance)
 
 	// Set up routes
@@ -55,6 +61,8 @@ func main() {
 	http.HandleFunc("/api/genres", movieHandler.GetGenres)
 	http.HandleFunc("/api/account/register", movieHandler.GetGenres)
 	http.HandleFunc("/api/account/authenticate", movieHandler.GetGenres)
+	http.HandleFunc("/api/account/register/", accountHandler.Register)
+	http.HandleFunc("/api/account/authenticate/", accountHandler.Authenticate)
 
 	// start server
 	const addr = ":8080"
