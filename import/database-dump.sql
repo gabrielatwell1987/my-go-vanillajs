@@ -131,6 +131,15 @@ CREATE TABLE "public"."users" (
     PRIMARY KEY ("id")
 );
 
+CREATE SEQUENCE IF NOT EXISTS passkeys_id_seq;
+
+CREATE TABLE "public"."passkeys" (
+    "id" int4 NOT NULL DEFAULT nextval('passkeys_id_seq'::regclass),
+    "user_id" int4,
+    "keys" text,
+    PRIMARY KEY ("id")
+);
+
 INSERT INTO "public"."actors" ("id", "first_name", "last_name", "image_url") VALUES
 (1, 'Sam', 'Worthington', 'https://image.tmdb.org/t/p/w500/mflBcox36s9ZPbsZPVOuhf6axaJ.jpg'),
 (2, 'Johnny', 'Depp', 'https://image.tmdb.org/t/p/w500/z4wuEcnTW4hlICMYPGn5W8bK2zh.jpg'),

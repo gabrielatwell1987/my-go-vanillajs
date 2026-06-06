@@ -5,10 +5,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"atwell.dev/reelingit/data"
 	"atwell.dev/reelingit/handlers"
 	"atwell.dev/reelingit/logger"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/joho/godotenv"
 )
 
@@ -46,7 +48,20 @@ func main() {
 	}
 
 	// serve static files
-	http.Handle("/", http.FileServer(http.Dir("public")))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        // For API routes, don't serve index.html
+        if strings.HasPrefix(r.URL.Path, "/api/") {
+            http.NotFound(w, r)
+            return
+        }
+        // For everything else, serve the file if it exists, otherwise fall back to index.html
+        filePath := "public" + r.URL.Path
+        if _, err := os.Stat(filePath); err == nil {
+            http.FileServer(http.Dir("public")).ServeHTTP(w, r)
+        } else {
+            http.ServeFile(w, r, "public/index.html")
+        }
+    })
 
 	// Initialize handlers
 	movieHandler := handlers.NewMovieHandler(movieRepo, logInstance)
@@ -58,11 +73,52 @@ func main() {
 	http.HandleFunc("/api/movies/top", movieHandler.GetTopMovies)
 	http.HandleFunc("/api/movies/search", movieHandler.SearchMovies)
 	http.HandleFunc("/api/movies/", movieHandler.GetMovie)
+	http.HandleFunc("/movies/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.Count(r.URL.Path, "/") == 2 && strings.HasPrefix(r.URL.Path, "/movies/") {
+			handlers.SSRMovieDetailsHandler(movieRepo, logInstance)(w, r)
+		} else {
+			catchAllHandler(w, r)
+		}
+	})
 	http.HandleFunc("/api/genres", movieHandler.GetGenres)
 	http.HandleFunc("/api/account/register", movieHandler.GetGenres)
 	http.HandleFunc("/api/account/authenticate", movieHandler.GetGenres)
 	http.HandleFunc("/api/account/register/", accountHandler.Register)
 	http.HandleFunc("/api/account/authenticate/", accountHandler.Authenticate)
+
+	http.Handle("/api/account/favorites/",
+		accountHandler.AuthMiddleware(http.HandlerFunc(accountHandler.GetFavorites)))
+	http.Handle("/api/account/watchlist/",
+		accountHandler.AuthMiddleware(http.HandlerFunc(accountHandler.GetWatchlist)))
+	http.Handle("/api/account/save-to-collection/",
+		accountHandler.AuthMiddleware(http.HandlerFunc(accountHandler.SaveToCollection)))
+
+	// WebAuthn Handlers
+	wconfig := &webauthn.Config{
+		RPDisplayName: "ReelingIt",
+		RPID:          "localhost",
+		RPOrigins:     []string{"http://localhost:8080"},
+	}
+
+	var webAuthnManager *webauthn.WebAuthn
+
+	if webAuthnManager, err = webauthn.New(wconfig); err != nil {
+		logInstance.Error("Error creating WebAuthn", err)
+	}
+
+	if err != nil {
+		logInstance.Error("Error initialing Passkey engine", err)
+	}
+
+	passkeyRepo := data.NewPasskeyRepository(db, *logInstance)
+	webAuthnHandler := handlers.NewWebAuthnHandler(passkeyRepo, logInstance, webAuthnManager)
+	http.Handle("/api/passkey/registration-begin",
+		accountHandler.AuthMiddleware(http.HandlerFunc(webAuthnHandler.WebAuthnRegistrationBeginHandler)))
+	http.Handle("/api/passkey/registration-end",
+		accountHandler.AuthMiddleware(http.HandlerFunc(webAuthnHandler.WebAuthnRegistrationEndHandler)))
+	http.HandleFunc("/api/passkey/authentication-begin", webAuthnHandler.WebAuthnAuthenticationBeginHandler)
+	http.HandleFunc("/api/passkey/authentication-end", webAuthnHandler.WebAuthnAuthenticationEndHandler)
+
 
 	// start server
 	const addr = ":8080"
@@ -71,6 +127,10 @@ func main() {
 		logInstance.Error("Server failed to start", err)
 		log.Fatalf("Server failed: %v", err)
 	}
+}
+
+func catchAllHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "public/index.html")
 }
 
 func initializeLogger() *logger.Logger {

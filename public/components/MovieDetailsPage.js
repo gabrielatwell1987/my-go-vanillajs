@@ -25,9 +25,16 @@ export default class MovieDetailsPage extends HTMLElement {
             <dd>${this.movie.release_year}</dd>
             <dt>Score</dt>
             <dd>${this.movie.score} / 10</dd>
-            <dt>Original languae</dt>
+            <dt>Original language</dt>
             <dd>${this.movie.language}</dd>
         `;
+        this.querySelector("#btnFavorites").addEventListener("click", () => {
+            app.saveToCollection(this.movie.id, "favorite")
+        })
+        this.querySelector("#btnWatchlist").addEventListener("click", () => {
+            app.saveToCollection(this.movie.id, "watchlist")
+        })
+
 
         const ulGenres = this.querySelector("#genres");
         ulGenres.innerHTML = "";

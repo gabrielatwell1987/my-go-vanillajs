@@ -6,7 +6,7 @@ export class MovieItemComponent extends HTMLElement {
 
     connectedCallback() {
         this.innerHTML = `
-                <a href="#">
+                <a href="/movies/${this.movie.id}" class="navlink">
                     <article>
                         <img src="${this.movie.poster_url}" alt="${this.movie.title} Poster">
                         <p>${this.movie.title} (${this.movie.release_year})</p>

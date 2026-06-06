@@ -2,12 +2,13 @@ import { routes } from "./Routes.js";
 
 const Router = {
     init: () => {
-        document.querySelectorAll("a.navlink").forEach(a => {
-            a.addEventListener("click", event => {
+        document.addEventListener("click", event => {
+            const link = event.target.closest("a.navlink");
+            if (link) {
                 event.preventDefault();
-                const href = a.getAttribute("href");
+                const href = link.getAttribute("href");
                 Router.go(href);
-            });
+            }
         });
         window.addEventListener("popstate", () => {
             Router.go(location.pathname, false);

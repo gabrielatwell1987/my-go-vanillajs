@@ -2,6 +2,7 @@ package data
 
 import (
 	"atwell.dev/reelingit/models"
+	"github.com/go-webauthn/webauthn/webauthn"
 )
 
 type MovieStorage interface {
@@ -17,4 +18,14 @@ type AccountStorage interface {
 	Register(string, string, string) (bool, error)
 	GetAccountDetails(string) (models.User, error)
 	SaveCollection(models.User, int, string) (bool, error)
+}
+
+type PasskeyStore interface {
+	GetUserByEmail(userName string) (*models.PasskeyUser, error)
+	GetUserByID(ID int) (*models.PasskeyUser, error)
+	SaveUser(models.PasskeyUser)
+	GenSessionID() (string, error)
+	GetSession(token string) (webauthn.SessionData, bool)
+	SaveSession(token string, data webauthn.SessionData)
+	DeleteSession(token string)
 }

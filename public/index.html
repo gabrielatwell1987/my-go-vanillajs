@@ -2,19 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>my-go-vanillajs</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
-</html>
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ReelingIt - Movies</title>
     <link
@@ -25,10 +12,14 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
     />
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/style.css" />
     <meta name="theme-color" content="#56bce8" />
     <link rel="manifest" href="app.webmanifest" />
     <link rel="icon" href="/images/icon.png" type="image/png" />
+    <script
+      src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"
+      defer
+    ></script>
     <script src="/app.js" type="module" defer></script>
     <base href="/" />
   </head>
@@ -55,14 +46,14 @@
       </div>
     </header>
 
-    <main>
-      <!-- Alert Modal -->
-      <dialog id="alert-modal">
-        <h3>Error</h3>
-        <p>There was an error loading the page</p>
-        <button class="action-btn" onclick="app.closeError()">OK</button>
-      </dialog>
-    </main>
+    <!-- Alert Modal (outside <main> so Router doesn't wipe it) -->
+    <dialog id="alert-modal">
+      <h3>Error</h3>
+      <p>There was an error loading the page</p>
+      <button class="action-btn" onclick="app.closeError()">OK</button>
+    </dialog>
+
+    <main></main>
 
     <footer>
       <p>© ReelingIt - atwell.dev</p>
@@ -103,8 +94,8 @@
           <youtube-embed id="trailer" data-url=""></youtube-embed>
           <section id="actions">
             <dl id="metadata"></dl>
-            <button>Add to Favorites</button>
-            <button>Add to Watchlist</button>
+            <button id="btnFavorites">Add to Favorites</button>
+            <button id="btnWatchlist">Add to Watchlist</button>
           </section>
         </header>
         <ul id="genres"></ul>
@@ -202,15 +193,50 @@
             type="password"
             id="login-password"
             placeholder="Password"
-            required
             autocomplete="current-password"
           />
           <button>Log In</button>
+
+          <!-- NEW -->
+          <button type="button" onclick="app.loginWithPasskey()">
+            Log In with a Passkey
+          </button>
+
           <p>
             If you don't have an account, please
             <a href="/account/register">register</a>.
           </p>
         </form>
+      </section>
+    </template>
+
+    <template id="template-account">
+      <section id="account">
+        <h2>You are Logged In</h2>
+        <button onclick="app.logout()">Log out</button>
+        <button onclick="app.Router.go('/account/favorites')">
+          Your Favorites
+        </button>
+        <button onclick="app.Router.go('/account/watchlist')">
+          Your Watchlist
+        </button>
+        <!-- NEW -->
+        <button onclick="app.addPasskey()">
+          Add a Passkey for faster login
+        </button>
+      </section>
+    </template>
+
+    <template id="template-collection">
+      <section>
+        <ul id="movies-result">
+          <animated-loading
+            data-elements="5"
+            data-width="150px"
+            data-height="220px"
+          >
+          </animated-loading>
+        </ul>
       </section>
     </template>
   </body>
